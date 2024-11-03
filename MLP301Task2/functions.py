@@ -1,6 +1,5 @@
 import cv2
 import csv
-import matplotlib.pyplot as plt
 import numpy as np
 from skimage.feature import graycomatrix, graycoprops, hog
 from sklearn.decomposition import PCA
@@ -36,11 +35,52 @@ def GLCMCalculator(roi):
     ASM = round(float(np.mean(graycoprops(g, 'ASM'))), 2)
     return [contrast, dissimilarity, homogeneity, ASM, energy, correlation]
 
+def HOGCalculator(gray_roi):
+    resized_gray_roi = cv2.resize(gray_roi, (30, 30))
 
-def writeFeaturesToCSV(csv_name, row, header):
-    file_exists = os.path.isfile(csv_name)
-    with open(csv_name, mode="a", newline='') as file:
+    features, hog_image = hog(
+        resized_gray_roi,
+        orientations = 9,
+        pixels_per_cell=(2, 2),
+        cells_per_block=(2, 2),
+        visualize=True,
+    )
+
+    features = [round(float(f), 2) for f in features]
+    return features
+
+def PCAHOGCalculator(HOG_features_list, n_component= 0.95):
+  name_list = [item[0] for item in HOG_features_list]
+  label_list = [item[1] for item in HOG_features_list]
+  features_list = [item[2] for item in HOG_features_list]
+  
+  scaler = StandardScaler()
+  standardized_features_list = scaler.fit_transform(features_list)
+  
+  pca = PCA(n_components=n_component)
+  PCA_HOG_features = pca.fit_transform(standardized_features_list)
+  
+  combined_list = []
+  
+  for name, label, pca_features in zip(name_list, label_list, PCA_HOG_features):
+    rounded_pca_features = [round(float(f), 2) for f in pca_features]
+    combined_list.append([name]  + [label] + [rounded_pca_features])
+    
+  return combined_list
+
+def writeFeaturesToCSV(csv_name, row, header, main_folder, sub_folder):
+    if not os.path.exists(main_folder):
+      os.makedirs(main_folder)
+    sub_folder_path = os.path.join(main_folder, sub_folder)
+    
+    if not os.path.exists(sub_folder_path):
+      os.makedirs(sub_folder_path)
+      
+    file_exists = os.path.isfile(os.path.join(sub_folder_path, csv_name))
+    with open(os.path.join(sub_folder_path, csv_name), mode="a", newline='') as file:
         writer = csv.writer(file)
         if not file_exists:
           writer.writerow(header) 
-        writer.writerow([row[0]] + list(row[1]) + [row[2]])
+        writer.writerow([row[0]] + [row[1]] + list(row[2]))
+        
+        
