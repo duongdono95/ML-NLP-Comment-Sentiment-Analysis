@@ -10,7 +10,14 @@ Combined_features_filename = "Combined_Features.csv"
 PCA_combined_feature_filename = "PCA_Combined_Features.csv"
 
 
-def FeatureExtraction(image_dataset_path, features_main_folder, features_sub_folder):
+def FeatureExtraction(image_dataset_path, features_main_folder, features_sub_folder, PCA_model = None):
+    # create feature main/ sub folders
+    if not os.path.exists(features_main_folder):
+        os.makedirs(features_main_folder)
+    feature_sub_folder_path = os.path.join(features_main_folder, features_sub_folder)
+    if not os.path.exists(feature_sub_folder_path):
+        os.makedirs(feature_sub_folder_path)
+    
     GLCM_features_list = []
     HOG_features_list = []
     combined_features_list = []
@@ -32,7 +39,13 @@ def FeatureExtraction(image_dataset_path, features_main_folder, features_sub_fol
                 HOG_features_list.append([image_name] + [label] + [HOG_features] )
                 
                 combined_features_list.append([image_name] + [label] + [GLCM_features + HOG_features])    
-    PCA_combined_features = PCACalculator(combined_features_list, 50)
+    
+    if not PCA_model: 
+        PCA_combined_features, pca = PCACalculator(combined_features_list, 100)
+        with open(os.path.join(features_main_folder, "pca_model.pkl"), "wb") as f:
+            pickle.dump(pca, f)
+    else: 
+        PCA_combined_features, pca = PCACalculator(combined_features_list, 100, PCA_model)
     
     GLCM_features_header = ["Images"] + ["Label"] + ["Contrast", "Dissimilarity", "Homogeneity", "ASM", "Energy", "Correlation" ]
     for GLCM_row in GLCM_features_list:

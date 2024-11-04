@@ -51,7 +51,7 @@ def HOGCalculator(gray_roi):
     features = [round(float(f), 2) for f in features]
     return features
 
-def PCACalculator(features_list, n_component= 0.95):
+def PCACalculator(features_list, n_component= 0.95, pca_model = None):
   name_list = [item[0] for item in features_list]
   label_list = [item[1] for item in features_list]
   features_list = [item[2] for item in features_list]
@@ -59,8 +59,12 @@ def PCACalculator(features_list, n_component= 0.95):
   scaler = StandardScaler()
   standardized_features_list = scaler.fit_transform(features_list)
   
-  pca = PCA(n_components=n_component)
-  PCA_HOG_features = pca.fit_transform(standardized_features_list)
+  if not pca_model: 
+    pca = PCA(n_components=n_component)
+    PCA_HOG_features = pca.fit_transform(standardized_features_list)
+  else: 
+    pca = pca_model
+    PCA_HOG_features = pca.transform(standardized_features_list)
   
   combined_list = []
   
