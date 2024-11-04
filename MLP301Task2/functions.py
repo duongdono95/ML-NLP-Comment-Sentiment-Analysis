@@ -29,7 +29,6 @@ def imageSegmentation(input):
 
 def GLCMCalculator(roi):
     g = graycomatrix(roi, [0, 1], [0, np.pi/2], levels=256)
-
     contrast = round(float(np.mean(graycoprops(g, 'contrast'))), 2)
     energy = round(float(np.mean(graycoprops(g, 'energy'))), 2)
     homogeneity = round(float(np.mean(graycoprops(g, 'homogeneity'))), 2)
@@ -52,10 +51,10 @@ def HOGCalculator(gray_roi):
     features = [round(float(f), 2) for f in features]
     return features
 
-def PCAHOGCalculator(HOG_features_list, n_component= 50):
-  name_list = [item[0] for item in HOG_features_list]
-  label_list = [item[1] for item in HOG_features_list]
-  features_list = [item[2] for item in HOG_features_list]
+def PCACalculator(features_list, n_component= 0.95):
+  name_list = [item[0] for item in features_list]
+  label_list = [item[1] for item in features_list]
+  features_list = [item[2] for item in features_list]
   
   scaler = StandardScaler()
   standardized_features_list = scaler.fit_transform(features_list)
@@ -69,7 +68,7 @@ def PCAHOGCalculator(HOG_features_list, n_component= 50):
     rounded_pca_features = [round(float(f), 2) for f in pca_features]
     combined_list.append([name]  + [label] + [rounded_pca_features])
     
-  return combined_list
+  return combined_list, pca
 
 def writeFeaturesToCSV(csv_name, row, header, main_folder, sub_folder):
     if not os.path.exists(main_folder):
