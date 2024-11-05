@@ -93,7 +93,7 @@ def writeFeaturesToCSV(csv_name, row, header, main_folder, sub_folder):
 def display_metrics(model_name, y_test, y_pred, y_test_binarized, y_score):
     print(f"Performance Metrics for {model_name}")
     print(f"Accuracy: {accuracy_score(y_test, y_pred):.2f}")
-    print(f"Precision: {precision_score(y_test, y_pred, average='weighted'):.2f}")
+    print(f"Precision: {precision_score(y_test, y_pred, average='weighted', zero_division=0):.2f}")
     print(f"Recall: {recall_score(y_test, y_pred, average='weighted'):.2f}")
     print(f"F1-Score: {f1_score(y_test, y_pred, average='weighted'):.2f}")
     auc_score = roc_auc_score(y_test_binarized, y_score, average='weighted', multi_class="ovr")
@@ -110,5 +110,21 @@ def plot_roc_curves_multiclass(y_test_binarized, y_scores, model_name, n_classes
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.title(f"ROC Curves for {model_name}")
+    plt.legend(loc="lower right")
+    plt.show()
+    
+def plot_roc_curves_multimodel(y_test_binarized_list, y_scores_list, model_names, n_classes):
+    plt.figure(figsize=(10, 7))
+    
+    for y_test_binarized, y_scores, model_name in zip(y_test_binarized_list, y_scores_list, model_names):
+        fpr, tpr, _ = roc_curve(y_test_binarized.ravel(), y_scores.ravel())
+        roc_auc = auc(fpr, tpr)
+        
+        plt.plot(fpr, tpr, label=f'{model_name} (AUC = {roc_auc:.2f})')
+
+    plt.plot([0, 1], [0, 1], 'k--', label="Random Guessing")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC Curves Comparing Classifier Models")
     plt.legend(loc="lower right")
     plt.show()
