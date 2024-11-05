@@ -1,14 +1,13 @@
-import numpy as np
-import pandas as pd
 import nltk
 import re
 
+# Define a mapping of sentiment labels to numeric encodings for easier processing.
 sentiment_mapping = [
     {"name": "neutral", "encode": 1},
     {"name": "positive", "encode": 2},
     {"name": "negative", "encode": 3}
 ]
-
+# Function to map sentiment labels to their respective numeric encodings.
 def map_sentiment(value):
     for item in sentiment_mapping:
       if item["name"] == value:
@@ -17,6 +16,8 @@ def map_sentiment(value):
   
 STOP_WORDS = nltk.corpus.stopwords.words("english")
 lemmatizer = nltk.WordNetLemmatizer()
+
+# Function to clean and preprocess a list of sentences.
 def handle_clean_text(sentences):
   cleaned_sentences = []
   for sentence in sentences: 
